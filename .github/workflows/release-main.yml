@@ -11,7 +11,7 @@ permissions:
 jobs:
   quality-gate:
     name: quality-gate
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     outputs:
       short_sha: ${{ steps.vars.outputs.short_sha }}
     steps:
@@ -31,19 +31,9 @@ jobs:
         run: echo "short_sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
   build-installers:
-    name: build-installers-${{ matrix.os_name }}
+    name: build-installers-macos
     needs: [quality-gate]
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os_name: macos
-            runner: macos-latest
-          - os_name: windows
-            runner: windows-latest
-          - os_name: linux
-            runner: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -70,14 +60,14 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: stayactive-${{ matrix.os_name }}-${{ needs.quality-gate.outputs.short_sha }}-${{ github.run_id }}
+          name: stayactive-macos-${{ needs.quality-gate.outputs.short_sha }}-${{ github.run_id }}
           path: |
             src-tauri/target/release/bundle/**
 
   publish:
     name: publish
     needs: [quality-gate, build-installers]
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     if: ${{ needs.quality-gate.result == 'success' && needs.build-installers.result == 'success' }}
     steps:
       - name: Checkout

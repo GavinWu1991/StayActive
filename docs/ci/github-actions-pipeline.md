@@ -11,6 +11,7 @@ This document defines the CI/CD workflow behavior for StayActive.
 ## PR workflow conventions
 
 - Trigger on `pull_request` events: `opened`, `synchronize`, `reopened` for `main`.
+- Run on `macos-latest` (current platform support is macOS-only).
 - Run quality gate only (no publish/release steps).
 - Use least-privilege permissions.
 - Keep workflow fork-safe (no privileged secrets required).
@@ -19,6 +20,7 @@ This document defines the CI/CD workflow behavior for StayActive.
 
 - Trigger on `push` to `main` and optional `workflow_dispatch`.
 - Enforce order: quality-gate -> build installers -> publish artifacts.
+- Build/publish scope is currently macOS only.
 - Publish only when prior stages succeed.
 - Artifact names include short SHA and run ID to avoid collisions.
 
