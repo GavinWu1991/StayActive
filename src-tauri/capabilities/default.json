@@ -1,0 +1,15 @@
+{
+  "identifier": "default",
+  "description": "Capability for local app windows",
+  "windows": ["main", "settings", "region-picker"],
+  "permissions": [
+    "core:default",
+    "shell:allow-open",
+    "core:window:allow-create",
+    "core:window:allow-center",
+    "core:window:allow-show",
+    "core:window:allow-close",
+    "core:window:allow-set-focus",
+    "core:event:default"
+  ]
+}

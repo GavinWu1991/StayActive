@@ -1,0 +1,24 @@
+name: PR Quality Gate
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  quality-gate:
+    name: quality-gate
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup project
+        uses: ./.github/actions/setup-project
+
+      - name: Run PR quality gate
+        shell: bash
+        run: bash scripts/ci/commands.sh quality-gate
