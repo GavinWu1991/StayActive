@@ -1,7 +1,7 @@
 {
   "productName": "StayActive",
   "version": "0.1.0",
-  "identifier": "com.stayactive.app",
+  "identifier": "com.stayactive",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:5173",

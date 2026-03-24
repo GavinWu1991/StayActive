@@ -41,6 +41,10 @@ jobs:
       - name: Setup project
         uses: ./.github/actions/setup-project
 
+      - name: Install frontend dependencies
+        shell: bash
+        run: npm ci
+
       - name: Build installer bundle
         uses: tauri-apps/tauri-action@v0
         env:
