@@ -68,9 +68,16 @@ pub fn is_expired() -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::{Mutex, OnceLock};
+
+    fn test_lock() -> std::sync::MutexGuard<'static, ()> {
+        static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+        LOCK.get_or_init(|| Mutex::new(())).lock().expect("test lock poisoned")
+    }
 
     #[test]
     fn test_clear_inactive() {
+        let _guard = test_lock();
         clear();
         let (active, rem, _mode, _dur) = state();
         assert!(!active);
@@ -79,6 +86,7 @@ mod tests {
 
     #[test]
     fn set_end_sets_active_state() {
+        let _guard = test_lock();
         clear();
         let now = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
@@ -97,6 +105,7 @@ mod tests {
 
     #[test]
     fn cancelled_timer_is_inactive() {
+        let _guard = test_lock();
         clear();
         let now = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
@@ -112,6 +121,7 @@ mod tests {
 
     #[test]
     fn is_expired_after_end_time() {
+        let _guard = test_lock();
         clear();
         let now = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)

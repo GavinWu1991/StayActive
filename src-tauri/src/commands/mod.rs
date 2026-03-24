@@ -55,12 +55,16 @@ pub async fn start_stay_active(app: AppHandle, handle: State<'_, LoopHandle>) ->
         // Trigger system prompt and open Accessibility pane so user can add the app.
         permission::request_accessibility_prompt();
         let _ = permission::open_system_preferences_accessibility();
-        let mut msg = "Accessibility permission not granted. A system dialog or System Settings should open—add this app to the list and enable it, then try Start again. If no dialog appears, you may be running the dev binary (e.g. tauri dev): use \"npm run dev:app\" and add the .app to Accessibility, then run dev:app again.".to_string();
         #[cfg(all(debug_assertions, target_os = "macos"))]
         {
+            let mut msg = "Accessibility permission not granted. A system dialog or System Settings should open—add this app to the list and enable it, then try Start again. If no dialog appears, you may be running the dev binary (e.g. tauri dev): use \"npm run dev:app\" and add the .app to Accessibility, then run dev:app again.".to_string();
             msg.push_str("\n\nPath to the .app: <project>/src-tauri/target/debug/bundle/macos/StayActive.app. Use Cmd+Shift+G in the Add dialog to open that folder.");
+            return Err(msg);
         }
-        return Err(msg);
+        #[cfg(not(all(debug_assertions, target_os = "macos")))]
+        {
+            return Err("Accessibility permission not granted. A system dialog or System Settings should open—add this app to the list and enable it, then try Start again. If no dialog appears, you may be running the dev binary (e.g. tauri dev): use \"npm run dev:app\" and add the .app to Accessibility, then run dev:app again.".to_string());
+        }
     }
     if automation::is_running() {
         dev_log!("start_stay_active skip (already running)");
@@ -127,6 +131,7 @@ pub async fn set_settings(
 ) -> Result<(), String> {
     let mut s = s;
     settings::validate(&mut s);
+    #[cfg(any(windows, target_os = "macos"))]
     let old_lang = settings::load().language.clone();
     settings::save(&s)?;
     // If language changed, refresh menu
@@ -145,7 +150,7 @@ pub async fn set_settings(
 }
 
 #[tauri::command]
-pub async fn set_language(app: AppHandle, lang: String) -> Result<(), String> {
+pub async fn set_language(_app: AppHandle, lang: String) -> Result<(), String> {
     if lang != "en" && lang != "zh" {
         return Err("Language must be 'en' or 'zh'".to_string());
     }
@@ -153,7 +158,7 @@ pub async fn set_language(app: AppHandle, lang: String) -> Result<(), String> {
     s.language = lang;
     settings::save(&s)?;
     #[cfg(any(windows, target_os = "macos"))]
-    crate::refresh_tray_menu(&app);
+    crate::refresh_tray_menu(&_app);
     Ok(())
 }
 
@@ -175,6 +180,7 @@ pub async fn start_region_selection(app: AppHandle) -> Result<(), String> {
 }
 
 #[tauri::command]
+#[allow(clippy::too_many_arguments)]
 pub async fn set_movement_region(
     app: AppHandle,
     handle: State<'_, LoopHandle>,

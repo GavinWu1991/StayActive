@@ -1,6 +1,6 @@
 //! macOS Accessibility permission check and open System Settings.
 
-#[cfg(debug_assertions)]
+#[cfg(all(debug_assertions, target_os = "macos"))]
 macro_rules! dev_log {
     ($($t:tt)*) => {{
         let _msg = format!("[StayActive:perm] {}", format!($($t)*));
@@ -8,7 +8,7 @@ macro_rules! dev_log {
         crate::dev_log_write(&_msg);
     }}
 }
-#[cfg(not(debug_assertions))]
+#[cfg(not(all(debug_assertions, target_os = "macos")))]
 macro_rules! dev_log {
     ($($t:tt)*) => {}
 }
@@ -62,7 +62,7 @@ pub fn request_accessibility_prompt() {
     let key = CFString::from_static_string("AXTrustedCheckOptionPrompt");
     let value = CFBoolean::true_value();
     let options = CFDictionary::from_CFType_pairs(&[(key, value)]);
-    let trusted = ax_is_trusted_with_options(options.as_CFTypeRef() as *const std::ffi::c_void);
+    let trusted = ax_is_trusted_with_options(options.as_CFTypeRef());
     dev_log!("AXIsProcessTrustedWithOptions(prompt=true) => trusted={}", trusted);
 }
 

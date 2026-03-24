@@ -9,14 +9,17 @@ mod permission;
 mod settings;
 mod timer;
 
+#[cfg(any(windows, target_os = "macos"))]
 use tauri::{
     image::Image,
     menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu},
     tray::{TrayIcon, TrayIconBuilder},
-    Emitter, Manager, WebviewUrl, WebviewWindowBuilder,
+    WebviewUrl, WebviewWindowBuilder,
 };
+use tauri::{Emitter, Manager};
 use std::sync::Arc;
 use tokio::sync::Mutex;
+#[cfg(any(windows, target_os = "macos"))]
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
 
 #[cfg(any(windows, target_os = "macos"))]
@@ -158,7 +161,7 @@ pub fn dev_log_write(line: &str) {
 pub fn dev_log_write(_line: &str) {}
 
 /// Dev-only debug log: stderr + file (no-op in release).
-#[cfg(debug_assertions)]
+#[cfg(all(debug_assertions, any(windows, target_os = "macos")))]
 macro_rules! dev_log {
     ($($t:tt)*) => {{
         let _msg = format!("[StayActive] {}", format!($($t)*));
@@ -166,7 +169,7 @@ macro_rules! dev_log {
         crate::dev_log_write(&_msg);
     }}
 }
-#[cfg(not(debug_assertions))]
+#[cfg(not(all(debug_assertions, any(windows, target_os = "macos"))))]
 macro_rules! dev_log {
     ($($t:tt)*) => {}
 }
@@ -396,6 +399,7 @@ pub fn run() {
                 loop {
                     interval.tick().await;
                     if !automation::is_running() {
+                        #[cfg(any(windows, target_os = "macos"))]
                         update_tray_icon(&app_guard);
                         continue;
                     }
@@ -419,7 +423,9 @@ pub fn run() {
                         })
                         .await;
                     }
+                    #[cfg(any(windows, target_os = "macos"))]
                     update_tray_icon(&app_guard);
+                    #[cfg(any(windows, target_os = "macos"))]
                     refresh_tray_menu(&app_guard);
                     let _ = app_guard.emit("permission_required", ());
                     let _ = app_guard.emit("stay_active_state_changed", serde_json::json!({ "active": false }));

@@ -41,6 +41,7 @@ pub fn clear_cancelled() {
 const MENU_BAR_AVOID_HEIGHT: i32 = 28;
 
 /// Run the stay-active loop until cancelled (blocking). Call from std::thread::spawn.
+#[allow(clippy::too_many_arguments)]
 pub fn run_loop_blocking(
     interval_min_sec: u64,
     interval_max_sec: u64,
@@ -67,6 +68,8 @@ pub fn run_loop_blocking(
     } else {
         None
     };
+    #[cfg(not(target_os = "macos"))]
+    let _ = prevent_sleep;
 
     let mut enigo = if simulate_move || simulate_click {
         match enigo::Enigo::new(&enigo::Settings::default()) {
@@ -152,7 +155,6 @@ fn would_move_into_menu_bar(_dx: i32, dy: i32) -> bool {
         Mouse::Position { x, y } => (x, y),
         Mouse::Error => return false,
     };
-    let y = y as i32;
     let new_y = y.saturating_add(dy);
     let top = match main_display_top_y() {
         Some(t) => t,

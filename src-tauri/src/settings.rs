@@ -32,7 +32,7 @@ pub struct Settings {
 }
 
 /// Rectangular region (in physical pixels) where movement is constrained when enabled.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
 pub struct MovementRegion {
     #[serde(default)]
@@ -42,19 +42,6 @@ pub struct MovementRegion {
     pub x_max: Option<i32>,
     pub y_max: Option<i32>,
     pub display_ref: Option<String>,
-}
-
-impl Default for MovementRegion {
-    fn default() -> Self {
-        Self {
-            enabled: false,
-            x_min: None,
-            y_min: None,
-            x_max: None,
-            y_max: None,
-            display_ref: None,
-        }
-    }
 }
 
 fn default_move_pixels_min() -> u32 {
@@ -144,8 +131,6 @@ fn validate_movement_region(r: &mut MovementRegion) {
     };
 
     // Enforce minimum size to avoid accidental tiny regions.
-    let mut x_min = x_min;
-    let mut y_min = y_min;
     let mut x_max = x_max;
     let mut y_max = y_max;
 
