@@ -1,0 +1,73 @@
+{
+  "common": {
+    "save": "保存",
+    "saving": "保存中…",
+    "reset": "重置",
+    "cancel": "取消",
+    "ok": "确定",
+    "on": "开启",
+    "off": "关闭"
+  },
+  "settings": {
+    "title": "偏好设置",
+    "general": "通用",
+    "advanced": "高级",
+    "language": "语言",
+    "operationInterval": "操作间隔",
+    "randomInterval": "随机间隔",
+    "inputSimulation": "输入模拟",
+    "movementRange": "移动范围",
+    "systemBehavior": "系统行为",
+    "minimumInterval": "最小间隔",
+    "maximumInterval": "最大间隔",
+    "minimumPixels": "最小像素",
+    "maximumPixels": "最大像素",
+    "simulateMove": "模拟鼠标移动",
+    "simulateClick": "模拟鼠标点击",
+    "clickButton": "点击按键",
+    "leftClick": "左键",
+    "rightClick": "右键",
+    "preventSleep": "在 Stay Active 运行时防止系统休眠",
+    "operationIntervalHint": "每次操作（移动和/或点击）之间的延迟。开启随机间隔后，每次会在最小与最大间隔之间随机取值。",
+    "simulationHint": "可开启移动和/或点击。如果两者都开启，每个间隔可能会同时执行移动与点击。",
+    "movementDisabledHint": "当前未开启移动。启用“模拟鼠标移动”后才能设置移动范围。",
+    "rangeHint": "鼠标移动范围（建议 1–5 像素以实现最小活动）",
+    "saved": "设置已保存。将立即生效。",
+    "english": "English",
+    "chinese": "中文",
+    "seconds": "秒",
+    "useMovementRegion": "使用移动区域",
+    "movementRegion": "移动区域",
+    "selectRegion": "选择区域…",
+    "reselectRegion": "重新选择区域…",
+    "clearRegion": "清除区域",
+    "regionEnabledDisablesRangeHint": "已启用移动区域，因此移动范围将失效。鼠标会在你选择的矩形区域内随机移动。",
+    "regionSummary": "已选择：{{width}}×{{height}}，位置 ({{x}}, {{y}})",
+    "movementRegionInvalid": "已保存的移动区域已不再有效，请重新选择区域。"
+  },
+  "regionPicker": {
+    "title": "选择移动区域",
+    "subtitle": "拖拽绘制矩形区域。按 Esc 取消。",
+    "tooSmall": "选择的区域太小，请拖拽更大的矩形区域。"
+  },
+  "timer": {
+    "title": "设置自动停止时间",
+    "hour": "小时",
+    "minute": "分钟"
+  },
+  "app": {
+    "stayActive": "保持活跃",
+    "status": "保持活跃：{{status}}",
+    "menuHint": "使用菜单栏图标来开始、停止、设置或退出。"
+  },
+  "permission": {
+    "title": "需要辅助功能权限",
+    "description": "StayActive 需要辅助功能访问权限来模拟最小鼠标移动，以便您的 Mac 保持活跃。",
+    "step1": "打开 <strong>系统设置</strong> → <strong>隐私与安全性</strong> → <strong>辅助功能</strong>。",
+    "step2": "添加 StayActive 并启用它。",
+    "step3": "返回此处重试。",
+    "firstTime": "首次使用？",
+    "firstTimeHint": "不要双击应用。右键点击应用 → <strong>打开</strong>。",
+    "openSettings": "打开系统设置"
+  }
+}

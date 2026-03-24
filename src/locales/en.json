@@ -1,0 +1,73 @@
+{
+  "common": {
+    "save": "Save",
+    "saving": "Saving…",
+    "reset": "Reset",
+    "cancel": "Cancel",
+    "ok": "OK",
+    "on": "On",
+    "off": "Off"
+  },
+  "settings": {
+    "title": "Preferences",
+    "general": "General",
+    "advanced": "Advanced",
+    "language": "Language",
+    "operationInterval": "Operation Interval",
+    "randomInterval": "Random interval",
+    "inputSimulation": "Input Simulation",
+    "movementRange": "Movement Range",
+    "systemBehavior": "System Behavior",
+    "minimumInterval": "Minimum interval",
+    "maximumInterval": "Maximum interval",
+    "minimumPixels": "Minimum pixels",
+    "maximumPixels": "Maximum pixels",
+    "simulateMove": "Simulate mouse movement",
+    "simulateClick": "Simulate mouse click",
+    "clickButton": "Click button",
+    "leftClick": "Left",
+    "rightClick": "Right",
+    "preventSleep": "Prevent system sleep while Stay Active is running",
+    "operationIntervalHint": "Delay between operations (move and/or click). With random interval enabled, a delay is chosen between the minimum and maximum each time.",
+    "simulationHint": "Enable movement and/or clicking. If both are enabled, both actions may occur at each interval.",
+    "movementDisabledHint": "Movement is disabled. Enable “Simulate mouse movement” to use movement range.",
+    "rangeHint": "Mouse movement range (1–5 recommended for minimal activity)",
+    "saved": "Settings saved. They apply immediately.",
+    "english": "English",
+    "chinese": "中文",
+    "seconds": "seconds",
+    "useMovementRegion": "Use movement region",
+    "movementRegion": "Movement region",
+    "selectRegion": "Select region…",
+    "reselectRegion": "Reselect region…",
+    "clearRegion": "Clear region",
+    "regionEnabledDisablesRangeHint": "Movement region is enabled, so movement range is disabled. The cursor will move to random points inside your selected rectangle.",
+    "regionSummary": "Selected: {{width}}×{{height}} at ({{x}}, {{y}})",
+    "movementRegionInvalid": "Saved movement region is no longer valid. Please reselect a region."
+  },
+  "regionPicker": {
+    "title": "Select movement region",
+    "subtitle": "Drag to draw a rectangle. Press Esc to cancel.",
+    "tooSmall": "Selected region is too small. Please drag a larger rectangle."
+  },
+  "timer": {
+    "title": "Set auto-stop time",
+    "hour": "Hour",
+    "minute": "Minute"
+  },
+  "app": {
+    "stayActive": "Stay Active",
+    "status": "Stay Active: {{status}}",
+    "menuHint": "Use the menu bar icon to Start, Stop, Settings, or Quit."
+  },
+  "permission": {
+    "title": "Accessibility permission required",
+    "description": "StayActive needs Accessibility access to simulate minimal mouse movement so your Mac stays active.",
+    "step1": "Open <strong>System Settings</strong> → <strong>Privacy & Security</strong> → <strong>Accessibility</strong>.",
+    "step2": "Add StayActive and enable it.",
+    "step3": "Return here and try again.",
+    "firstTime": "First time?",
+    "firstTimeHint": "Do not double-click the app. Right-click the app → <strong>Open</strong>.",
+    "openSettings": "Open System Settings"
+  }
+}

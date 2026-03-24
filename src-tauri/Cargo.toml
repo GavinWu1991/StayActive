@@ -1,0 +1,32 @@
+[package]
+name = "stay-active"
+version = "0.1.0"
+description = "Keep your Mac appearing active (no sleep, no idle)"
+authors = ["you"]
+edition = "2021"
+rust-version = "1.70"
+
+[lib]
+name = "stay_active_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-dialog = "2"
+tauri-plugin-shell = "2"
+enigo = "0.2"
+keepawake = "0.6"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+dirs = "5"
+chrono = "0.4"
+image = "0.24"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+core-foundation = "0.9"
+libc = "0.2"
+mouse_position = "0.1"

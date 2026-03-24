@@ -1,0 +1,57 @@
+{
+  "productName": "StayActive",
+  "version": "0.1.0",
+  "identifier": "com.stayactive.app",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "StayActive",
+        "width": 420,
+        "height": 380,
+        "resizable": true,
+        "visible": false
+      },
+      {
+        "label": "settings",
+        "title": "Preferences",
+        "width": 520,
+        "height": 650,
+        "resizable": false,
+        "visible": false
+      },
+      {
+        "label": "timer-picker",
+        "title": "Set auto-stop time",
+        "width": 360,
+        "height": 180,
+        "resizable": false,
+        "visible": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "macOS": {
+      "infoPlist": "Info.plist"
+    }
+  },
+  "plugins": {}
+}
