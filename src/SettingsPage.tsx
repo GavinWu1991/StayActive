@@ -3,6 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { useI18n } from "./i18n";
 import type { MovementRegion } from "./types";
 import { listen } from "@tauri-apps/api/event";
+import { MOVEMENT_REGION_UI_ENABLED } from "./featureFlags";
 
 export interface Settings {
   interval_min_sec: number;
@@ -127,7 +128,12 @@ export function SettingsPage() {
   useEffect(() => {
     invoke<Settings>("get_settings")
       .then((s) => {
-        setSettings({ ...DEFAULTS, ...s });
+        const next = { ...DEFAULTS, ...s };
+        // Region feature is WIP — keep UI/state on the default (disabled) path.
+        if (!MOVEMENT_REGION_UI_ENABLED) {
+          next.movement_region = { enabled: false };
+        }
+        setSettings(next);
         // Sync language if it's different
         if (s.language && (s.language === "en" || s.language === "zh") && s.language !== language) {
           setLanguage(s.language);
@@ -137,6 +143,7 @@ export function SettingsPage() {
   }, []);
 
   useEffect(() => {
+    if (!MOVEMENT_REGION_UI_ENABLED) return;
     const unlisten = listen<MovementRegion>("movement_region_selected", (e) => {
       setSettings((s) => ({
         ...s,
@@ -168,7 +175,9 @@ export function SettingsPage() {
         move_pixels_min: Number(settings.move_pixels_min ?? DEFAULTS.move_pixels_min),
         move_pixels_max: Number(settings.move_pixels_max ?? DEFAULTS.move_pixels_max),
         simulate_move: settings.simulate_move ?? DEFAULTS.simulate_move,
-        movement_region: settings.movement_region ?? DEFAULTS.movement_region,
+        movement_region: MOVEMENT_REGION_UI_ENABLED
+          ? settings.movement_region ?? DEFAULTS.movement_region
+          : { enabled: false },
         simulate_click: settings.simulate_click ?? DEFAULTS.simulate_click,
         click_button: settings.click_button ?? DEFAULTS.click_button,
         prevent_sleep: settings.prevent_sleep ?? DEFAULTS.prevent_sleep,
@@ -339,79 +348,88 @@ export function SettingsPage() {
             <span>{t("settings.simulateMove")}</span>
           </label>
         </div>
-        <div className="section-row">
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
-              className="mac-checkbox"
-              checked={settings.movement_region?.enabled ?? DEFAULTS.movement_region?.enabled}
-              onChange={(e) =>
-                setSettings((s) => ({
-                  ...s,
-                  movement_region: { ...(s.movement_region ?? DEFAULTS.movement_region!), enabled: e.target.checked },
-                }))
-              }
-              disabled={!(settings.simulate_move ?? DEFAULTS.simulate_move)}
-            />
-            <span>{t("settings.useMovementRegion")}</span>
-          </label>
-        </div>
-
-        {(() => {
-          const region = settings.movement_region ?? DEFAULTS.movement_region!;
-          const enabled = region.enabled;
-          const configured =
-            region.x_min != null &&
-            region.y_min != null &&
-            region.x_max != null &&
-            region.y_max != null;
-          if (!enabled) return null;
-          return (
+        {/* Movement region UI is temporarily hidden (WIP). Flip MOVEMENT_REGION_UI_ENABLED to restore. */}
+        {MOVEMENT_REGION_UI_ENABLED && (
+          <>
             <div className="section-row">
-              <label className="field-label">
-                <span>{t("settings.movementRegion")}</span>
-                <div className="segmented-control">
-                  <button
-                    type="button"
-                    className="mac-button secondary"
-                    onClick={() => invoke("start_region_selection")}
-                  >
-                    {configured ? t("settings.reselectRegion") : t("settings.selectRegion")}
-                  </button>
-                  {configured && (
-                    <button
-                      type="button"
-                      className="mac-button secondary"
-                      onClick={() => invoke("clear_movement_region")}
-                    >
-                      {t("settings.clearRegion")}
-                    </button>
-                  )}
-                </div>
-                {configured && (
-                  <div className="section-hint" style={{ marginTop: 8 }}>
-                    <InfoIcon className="hint-icon" />
-                    <span>
-                      {t("settings.regionSummary", {
-                        x: String(region.x_min),
-                        y: String(region.y_min),
-                        width: String(Number(region.x_max) - Number(region.x_min)),
-                        height: String(Number(region.y_max) - Number(region.y_min)),
-                      })}
-                    </span>
-                  </div>
-                )}
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  className="mac-checkbox"
+                  checked={settings.movement_region?.enabled ?? DEFAULTS.movement_region?.enabled}
+                  onChange={(e) =>
+                    setSettings((s) => ({
+                      ...s,
+                      movement_region: {
+                        ...(s.movement_region ?? DEFAULTS.movement_region!),
+                        enabled: e.target.checked,
+                      },
+                    }))
+                  }
+                  disabled={!(settings.simulate_move ?? DEFAULTS.simulate_move)}
+                />
+                <span>{t("settings.useMovementRegion")}</span>
               </label>
             </div>
-          );
-        })()}
+
+            {(() => {
+              const region = settings.movement_region ?? DEFAULTS.movement_region!;
+              const enabled = region.enabled;
+              const configured =
+                region.x_min != null &&
+                region.y_min != null &&
+                region.x_max != null &&
+                region.y_max != null;
+              if (!enabled) return null;
+              return (
+                <div className="section-row">
+                  <label className="field-label">
+                    <span>{t("settings.movementRegion")}</span>
+                    <div className="segmented-control">
+                      <button
+                        type="button"
+                        className="mac-button secondary"
+                        onClick={() => invoke("start_region_selection")}
+                      >
+                        {configured ? t("settings.reselectRegion") : t("settings.selectRegion")}
+                      </button>
+                      {configured && (
+                        <button
+                          type="button"
+                          className="mac-button secondary"
+                          onClick={() => invoke("clear_movement_region")}
+                        >
+                          {t("settings.clearRegion")}
+                        </button>
+                      )}
+                    </div>
+                    {configured && (
+                      <div className="section-hint" style={{ marginTop: 8 }}>
+                        <InfoIcon className="hint-icon" />
+                        <span>
+                          {t("settings.regionSummary", {
+                            x: String(region.x_min),
+                            y: String(region.y_min),
+                            width: String(Number(region.x_max) - Number(region.x_min)),
+                            height: String(Number(region.y_max) - Number(region.y_min)),
+                          })}
+                        </span>
+                      </div>
+                    )}
+                  </label>
+                </div>
+              );
+            })()}
+          </>
+        )}
 
         {!(settings.simulate_move ?? DEFAULTS.simulate_move) ? (
           <div className="section-hint">
             <InfoIcon className="hint-icon" />
             <span>{t("settings.movementDisabledHint")}</span>
           </div>
-        ) : (settings.movement_region?.enabled ?? DEFAULTS.movement_region?.enabled) ? (
+        ) : MOVEMENT_REGION_UI_ENABLED &&
+          (settings.movement_region?.enabled ?? DEFAULTS.movement_region?.enabled) ? (
           <div className="section-hint">
             <InfoIcon className="hint-icon" />
             <span>{t("settings.regionEnabledDisablesRangeHint")}</span>

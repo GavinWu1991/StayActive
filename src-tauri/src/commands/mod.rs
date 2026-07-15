@@ -164,6 +164,11 @@ pub async fn set_language(_app: AppHandle, lang: String) -> Result<(), String> {
 
 #[tauri::command]
 pub async fn start_region_selection(app: AppHandle) -> Result<(), String> {
+    if !settings::MOVEMENT_REGION_FEATURE_ENABLED {
+        let _ = app;
+        return Err("Movement region selection is temporarily unavailable.".into());
+    }
+
     // Show region picker overlay window.
     if let Some(win) = app.get_webview_window("region-picker") {
         let _ = win.show();
@@ -191,6 +196,10 @@ pub async fn set_movement_region(
     x_max: Option<f64>,
     y_max: Option<f64>,
 ) -> Result<(), String> {
+    if !settings::MOVEMENT_REGION_FEATURE_ENABLED {
+        let _ = (app, handle, enabled, display_ref, x_min, y_min, x_max, y_max);
+        return Err("Movement region is temporarily unavailable.".into());
+    }
     let mut s = settings::load();
     s.movement_region.enabled = enabled;
     s.movement_region.display_ref = display_ref;
@@ -227,6 +236,11 @@ pub async fn set_movement_region(
 
 #[tauri::command]
 pub async fn clear_movement_region(app: AppHandle, handle: State<'_, LoopHandle>) -> Result<(), String> {
+    if !settings::MOVEMENT_REGION_FEATURE_ENABLED {
+        let _ = (app, handle);
+        return Err("Movement region is temporarily unavailable.".into());
+    }
+
     let mut s = settings::load();
     s.movement_region = MovementRegion::default();
     settings::save(&s)?;

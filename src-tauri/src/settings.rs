@@ -4,6 +4,10 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
 
+/// Temporarily disable incomplete movement-region feature for MVP.
+/// Flip to `true` when region selection + automation are ready.
+pub const MOVEMENT_REGION_FEATURE_ENABLED: bool = false;
+
 /// User-configurable options for stay-active behavior. Matches data-model and contract.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -114,7 +118,11 @@ pub fn validate(s: &mut Settings) {
         s.click_button = default_click_button();
     }
 
-    validate_movement_region(&mut s.movement_region);
+    if !MOVEMENT_REGION_FEATURE_ENABLED {
+        s.movement_region = MovementRegion::default();
+    } else {
+        validate_movement_region(&mut s.movement_region);
+    }
 }
 
 /// Basic validation for movement region configuration.

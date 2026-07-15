@@ -18,7 +18,7 @@ Built with Tauri v2 (`Rust` + `React` + `Vite`).
 - Timer presets: `10m`, `30m`, `1h`, `2h`, `3h`
 - Custom timer end-time picker
 - Countdown display and cancel flow from tray menu
-- Settings window (automation behavior + language + region)
+- Settings window (automation behavior + language)
 - Localization: English and Chinese
 - Accessibility permission guidance and in-app prompt handling
 
