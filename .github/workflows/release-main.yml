@@ -30,79 +30,79 @@ jobs:
         shell: bash
         run: echo "short_sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
-  build-installers:
-    name: build-installers-macos
-    needs: [quality-gate]
-    runs-on: macos-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  # build-installers:
+  #   name: build-installers-macos
+  #   needs: [quality-gate]
+  #   runs-on: macos-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
 
-      - name: Setup project
-        uses: ./.github/actions/setup-project
+  #     - name: Setup project
+  #       uses: ./.github/actions/setup-project
 
-      - name: Install frontend dependencies
-        shell: bash
-        run: npm ci
+  #     - name: Install frontend dependencies
+  #       shell: bash
+  #       run: npm ci
 
-      # Build only — versioned public downloads are published by Tag Release Pipeline.
-      - name: Build macOS installer bundle
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          uploadUpdaterJson: false
-          uploadUpdaterSignatures: false
-          uploadWorkflowArtifacts: false
+  #     # Build only — versioned public downloads are published by Tag Release Pipeline.
+  #     - name: Build macOS installer bundle
+  #       uses: tauri-apps/tauri-action@v0
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         uploadUpdaterJson: false
+  #         uploadUpdaterSignatures: false
+  #         uploadWorkflowArtifacts: false
 
-      - name: Upload raw bundles
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: stayactive-macos-${{ needs.quality-gate.outputs.short_sha }}-${{ github.run_id }}
-          path: |
-            src-tauri/target/release/bundle/**
+  #     - name: Upload raw bundles
+  #       if: always()
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: stayactive-macos-${{ needs.quality-gate.outputs.short_sha }}-${{ github.run_id }}
+  #         path: |
+  #           src-tauri/target/release/bundle/**
 
-  publish:
-    name: publish
-    needs: [quality-gate, build-installers]
-    runs-on: macos-latest
-    if: ${{ needs.quality-gate.result == 'success' && needs.build-installers.result == 'success' }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  # publish:
+  #   name: publish
+  #   needs: [quality-gate, build-installers]
+  #   runs-on: macos-latest
+  #   if: ${{ needs.quality-gate.result == 'success' && needs.build-installers.result == 'success' }}
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
 
-      - name: Generate release metadata
-        shell: bash
-        env:
-          TEST_OUTCOME_AGGREGATE: success
-          ARTIFACT_NAME_MACOS: stayactive-macos-${{ needs.quality-gate.outputs.short_sha }}-${{ github.run_id }}
-          ARTIFACT_URI_MACOS: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: bash scripts/ci/generate-release-metadata.sh release-metadata.json
+  #     - name: Generate release metadata
+  #       shell: bash
+  #       env:
+  #         TEST_OUTCOME_AGGREGATE: success
+  #         ARTIFACT_NAME_MACOS: stayactive-macos-${{ needs.quality-gate.outputs.short_sha }}-${{ github.run_id }}
+  #         ARTIFACT_URI_MACOS: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+  #       run: bash scripts/ci/generate-release-metadata.sh release-metadata.json
 
-      - name: Upload release metadata
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-metadata-${{ needs.quality-gate.outputs.short_sha }}-${{ github.run_id }}
-          path: release-metadata.json
+  #     - name: Upload release metadata
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: release-metadata-${{ needs.quality-gate.outputs.short_sha }}-${{ github.run_id }}
+  #         path: release-metadata.json
 
-      - name: Publish run summary
-        shell: bash
-        run: |
-          echo "## Main build traceability" >> "$GITHUB_STEP_SUMMARY"
-          echo "- source_revision: $GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
-          echo "- pipeline_run_id: $GITHUB_RUN_ID" >> "$GITHUB_STEP_SUMMARY"
-          echo "- workflow_run_url: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> "$GITHUB_STEP_SUMMARY"
-          echo "- note: Public GitHub Releases are created by Tag Release Pipeline on \`v*\` tags." >> "$GITHUB_STEP_SUMMARY"
+  #     - name: Publish run summary
+  #       shell: bash
+  #       run: |
+  #         echo "## Main build traceability" >> "$GITHUB_STEP_SUMMARY"
+  #         echo "- source_revision: $GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+  #         echo "- pipeline_run_id: $GITHUB_RUN_ID" >> "$GITHUB_STEP_SUMMARY"
+  #         echo "- workflow_run_url: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> "$GITHUB_STEP_SUMMARY"
+  #         echo "- note: Public GitHub Releases are created by Tag Release Pipeline on \`v*\` tags." >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Optional webhook notification on failure
-        if: ${{ failure() }}
-        shell: bash
-        env:
-          CI_FAILURE_WEBHOOK_URL: ${{ secrets.CI_FAILURE_WEBHOOK_URL }}
-        run: |
-          if [ -n "${CI_FAILURE_WEBHOOK_URL:-}" ]; then
-            curl -X POST -H "Content-Type: application/json" \
-              -d "{\"text\":\"Main release failed: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\"}" \
-              "$CI_FAILURE_WEBHOOK_URL"
-          fi
+  #     - name: Optional webhook notification on failure
+  #       if: ${{ failure() }}
+  #       shell: bash
+  #       env:
+  #         CI_FAILURE_WEBHOOK_URL: ${{ secrets.CI_FAILURE_WEBHOOK_URL }}
+  #       run: |
+  #         if [ -n "${CI_FAILURE_WEBHOOK_URL:-}" ]; then
+  #           curl -X POST -H "Content-Type: application/json" \
+  #             -d "{\"text\":\"Main release failed: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\"}" \
+  #             "$CI_FAILURE_WEBHOOK_URL"
+  #         fi

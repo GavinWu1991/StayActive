@@ -2,96 +2,112 @@
 
 [English README](./README.md)
 
-StayActive 是一款 macOS 菜单栏应用，通过轻量模拟活动并可选阻止休眠，让电脑保持“活跃”状态。  
-技术栈：Tauri v2（`Rust` + `React` + `Vite`）。
+**StayActive** 是一款轻量的 macOS 菜单栏应用，用于让电脑保持“活跃”状态——协作软件（如 Microsoft Teams）不易因闲置变黄，并可选阻止系统休眠。
 
-## 当前范围
+应用仅驻留菜单栏（不显示 Dock 图标），通过模拟轻微鼠标活动，并可选持有系统唤醒断言来工作。
 
-- 平台支持：**仅 macOS**
-- CI/CD 支持：**仅 macOS**
-- 交付阶段：**MVP**
+> **平台：** 仅 macOS · **状态：** MVP（v0.1.0）
 
-## MVP 功能
+---
 
-- 菜单栏托盘应用（图标显示 `on` / `off` 状态）
-- 一键切换 **Stay Active**
-- 定时预设：`10 分钟`、`30 分钟`、`1 小时`、`2 小时`、`3 小时`
-- 自定义结束时间选择器
-- 托盘中显示倒计时，并支持取消
-- 设置窗口（自动化行为 + 语言）
-- 中英文多语言
-- 辅助功能权限引导与应用内提示流程
+## 面向用户
 
-## CI/CD（GitHub Actions，macOS-only）
+### 能解决什么问题？
 
-- PR 流水线：`.github/workflows/ci-pr.yml`
-  - 触发：对 `main` 的 Pull Request
-  - 执行：`macos-latest` 上的 `quality-gate`
-- 主分支流水线：`.github/workflows/release-main.yml`
-  - 触发：`main` 分支 push + 可选手动触发
-  - 顺序：`quality-gate` -> `build-installers-macos` -> 元数据/产物上传
-  - 不会创建公开 GitHub Release
-- Tag 流水线：`.github/workflows/release-tag.yml`
-  - 触发：推送 `v*` 标签（如 `v0.1.0`）或手动指定标签
-  - 构建 macOS 安装包并发布到 GitHub Release（可供下载）
-  - 自动生成版本说明（Release Notes）
+- 长时间开会或专注时，让 Teams 等应用保持“在线/可用”
+- 开启「保持活跃」时可选择阻止 Mac 休眠
+- 菜单栏一键开关；支持定时自动关闭
+- 界面支持中文与英文
 
-参考文档：
+### 下载
 
-- `docs/ci/github-actions-pipeline.md`
-- `specs/005-github-actions-pipeline/contracts/workflow-triggers.md`
+1. 打开最新 [GitHub Release](https://github.com/GavinWu1991/StayActive/releases)。
+2. 下载 macOS `.dmg`（或 `.app` 产物）。
+3. 日常使用前，请先按下方 **首次运行** 完成授权。
 
-## 公开试用下载（GitHub Releases）
+### 首次运行（重要）
 
-1. 打开 [Releases](https://github.com/GavinWu1991/StayActive/releases)。
-2. 下载最新 macOS `.dmg` / app 产物。
-3. 按下方「首次运行」说明操作。
+当前包并非来自 Mac App Store，系统 Gatekeeper 会拦截普通双击启动。
 
-### 发布一个正式版本
+1. 首次请**不要**直接双击打开。
+2. 在 Finder 中**右键**点击 `.app` → **打开** → 再确认 **打开**。
+3. 按提示授予**辅助功能**权限：  
+   **系统设置 → 隐私与安全性 → 辅助功能** → 勾选启用 **StayActive**。
 
-```bash
-# 1) 确认 src-tauri/tauri.conf.json 的 version（例如 0.1.0）
-# 2) 合并到 main 后：
-git tag v0.1.0
-git push origin v0.1.0
-```
+未授予辅助功能时，应用无法模拟输入，并会引导你完成授权。
 
-GitHub Actions 会运行 `Tag Release Pipeline` 并自动发布 Release 页面。
+### 如何使用
 
-## 首次运行（重要）
+点击菜单栏图标：
 
-如果应用不是来自 Mac App Store：
+| 菜单项 | 作用 |
+|--------|------|
+| **保持活跃** | 开启 / 关闭活动模拟 |
+| **定时器** | 在 10 分钟 / 30 分钟 / 1 小时 / 2 小时 / 3 小时后自动停止，或 **自定义…** 结束时间 |
+| 倒计时（已设置定时时） | 显示剩余时间；点击可取消定时（保持活跃会继续运行） |
+| **设置…** | 间隔、鼠标移动/点击选项、阻止休眠、语言 |
+| **退出** | 退出应用 |
 
-1. 首次不要直接双击启动；
-2. Finder 中右键 `.app` -> **打开** -> 再确认 **打开**；
-3. 在  
-   **系统设置 -> 隐私与安全性 -> 辅助功能**  
-   中授予 StayActive 权限。
+托盘图标会反映开/关状态。
 
-## 本地开发
+### 隐私与行为说明
+
+- 活动仅在本机完成：轻微鼠标移动/点击，不会上传到服务器。
+- 若你刚操作过鼠标/键盘，模拟会短暂让开，避免打扰真实操作。
+- 当前为 MVP，个别协作软件在边缘场景仍可能判定闲置；如遇问题欢迎提 Issue。
+
+---
+
+## 面向贡献者
+
+欢迎提交问题、文档改进与 PR。请尽量保持改动范围清晰，并与现有 macOS MVP 方向一致。
+
+### 技术栈
+
+| 层级 | 技术 |
+|------|------|
+| 壳层 | [Tauri v2](https://v2.tauri.app/) |
+| 后端 | Rust（`src-tauri/`） |
+| 前端 | React 18 + Vite + TypeScript（`src/`） |
+| 输入模拟 | `enigo` |
+| 防休眠 | `keepawake` |
 
 ### 前置要求
 
 - macOS
-- Node.js LTS
-- Rust stable
+- [Node.js](https://nodejs.org/) 20+（LTS；CI 使用 Node 20）
+- [Rust](https://rustup.rs/) stable（edition 2021，`rust-version` ≥ 1.70）
+- Tauri CLI：`cargo install tauri-cli`（或通过项目既有方式使用 `cargo tauri`）
 
-### 安装依赖
+### 快速开始
 
 ```bash
 npm install
 ```
 
-### 运行（前端开发）
+仅前端（浏览器）：
 
 ```bash
 npm run dev
 ```
 
-### 运行桌面应用（建议用于权限调试）
+**桌面应用（推荐）**——调试辅助功能权限时需要（系统设置里只能添加 `.app`）：
 
 ```bash
 npm run dev:app
+```
+
+脚本会构建 debug `.app` 并打开。请在 **辅助功能** 中添加该 `.app`，必要时再跑一次 `dev:app`。
+
+### 目录结构
+
+```
+src/                 React 界面（设置、定时选择器、多语言）
+src-tauri/           Rust 后端（托盘、自动化、权限、定时器）
+scripts/             开发辅助与 CI 命令封装
+docs/                设计与 CI 文档
+specs/               功能规格 / 契约
+.github/workflows/   PR 质量门禁、主分支构建、标签发版
 ```
 
 ### 构建
@@ -101,19 +117,25 @@ npm run build
 cargo tauri build
 ```
 
-构建产物（macOS `.app`）：
+应用包路径：
 
 `src-tauri/target/release/bundle/macos/StayActive.app`
 
-### 可选 ad-hoc 签名（MVP）
+可选本地 ad-hoc 签名（MVP）：
 
 ```bash
 codesign --force --deep -s - src-tauri/target/release/bundle/macos/StayActive.app
 ```
 
-## 质量门禁命令
+### 质量门禁
 
-当前流水线质量门禁使用以下命令：
+与 CI 相同：
+
+```bash
+bash scripts/ci/commands.sh quality-gate
+```
+
+或手动执行：
 
 ```bash
 npm ci
@@ -122,20 +144,45 @@ cargo test --manifest-path src-tauri/Cargo.toml
 cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings
 ```
 
-也可使用封装脚本：
-
-```bash
-bash scripts/ci/commands.sh quality-gate
-```
-
-## 调试日志
+### 调试日志
 
 Debug 构建日志路径：
 
 `~/Library/Logs/StayActive/debug.log`
 
-实时查看：
-
 ```bash
 tail -f ~/Library/Logs/StayActive/debug.log
 ```
+
+### CI / CD（仅 macOS）
+
+| 流水线 | 触发 | 内容 |
+|--------|------|------|
+| [ci-pr.yml](.github/workflows/ci-pr.yml) | PR → `main` | 在 `macos-latest` 跑质量门禁 |
+| [release-main.yml](.github/workflows/release-main.yml) | 推送到 `main` | 质量门禁 → 构建安装包 → 上传产物（**不**发公开 Release） |
+| [release-tag.yml](.github/workflows/release-tag.yml) | `v*` 标签 | 构建并发布到 [GitHub Release](https://github.com/GavinWu1991/StayActive/releases) |
+
+详见：[docs/ci/github-actions-pipeline.md](./docs/ci/github-actions-pipeline.md)
+
+### 发布正式版本
+
+1. 确认 `src-tauri/tauri.conf.json` 中的 `version`（例如 `0.1.0`）。
+2. 合并到 `main` 后：
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+标签流水线会自动发布 Release 与下载资源。
+
+### 延伸阅读
+
+- 设计说明：[docs/start.md](./docs/start.md)
+- 功能契约见 `specs/` 目录
+
+---
+
+## 许可证
+
+仓库尚未发布 LICENSE 文件。在明确许可之前，版权归作者所有——如需再分发请先沟通。
