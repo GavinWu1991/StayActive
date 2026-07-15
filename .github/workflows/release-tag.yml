@@ -1,0 +1,150 @@
+name: Tag Release Pipeline
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing version tag to build and publish (e.g. v0.1.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  quality-gate:
+    name: quality-gate
+    runs-on: macos-latest
+    outputs:
+      short_sha: ${{ steps.vars.outputs.short_sha }}
+      tag_name: ${{ steps.vars.outputs.tag_name }}
+      is_prerelease: ${{ steps.vars.outputs.is_prerelease }}
+    steps:
+      - name: Resolve tag name
+        id: tag
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ inputs.tag }}"
+          else
+            TAG="${GITHUB_REF_NAME}"
+          fi
+          if [[ ! "$TAG" =~ ^v[0-9]+ ]]; then
+            echo "Tag must look like v0.1.0 (got: $TAG)" >&2
+            exit 1
+          fi
+          echo "tag_name=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.tag.outputs.tag_name }}
+          fetch-depth: 0
+
+      - name: Setup project
+        uses: ./.github/actions/setup-project
+
+      - name: Validate tag matches app version
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ steps.tag.outputs.tag_name }}
+        run: bash scripts/ci/validate-release-tag.sh
+
+      - name: Build and test gate
+        shell: bash
+        run: bash scripts/ci/commands.sh quality-gate
+
+      - name: Set variables
+        id: vars
+        shell: bash
+        run: |
+          TAG="${{ steps.tag.outputs.tag_name }}"
+          echo "short_sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          echo "tag_name=$TAG" >> "$GITHUB_OUTPUT"
+          if [[ "$TAG" == *-* ]]; then
+            echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  build-and-publish:
+    name: build-and-publish-macos
+    needs: [quality-gate]
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.quality-gate.outputs.tag_name }}
+          fetch-depth: 0
+
+      - name: Setup project
+        uses: ./.github/actions/setup-project
+
+      - name: Install frontend dependencies
+        shell: bash
+        run: npm ci
+
+      - name: Build macOS package and publish GitHub Release
+        id: tauri
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ needs.quality-gate.outputs.tag_name }}
+          releaseName: StayActive ${{ needs.quality-gate.outputs.tag_name }}
+          releaseBody: |
+            ## StayActive ${{ needs.quality-gate.outputs.tag_name }}
+
+            macOS MVP build for public trial.
+
+            ### Install notes
+            1. Download the `.dmg` (or app bundle) below.
+            2. Right-click the app → **Open** the first time (Gatekeeper).
+            3. Grant **Accessibility** in System Settings → Privacy & Security.
+
+            ### Traceability
+            - source_revision: `${{ github.sha }}`
+            - pipeline_run_id: `${{ github.run_id }}`
+            - workflow_run_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          generateReleaseNotes: true
+          releaseDraft: false
+          prerelease: ${{ needs.quality-gate.outputs.is_prerelease == 'true' }}
+          uploadUpdaterJson: false
+          uploadUpdaterSignatures: false
+
+      - name: Upload raw bundles
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stayactive-macos-${{ needs.quality-gate.outputs.tag_name }}-${{ needs.quality-gate.outputs.short_sha }}-${{ github.run_id }}
+          path: |
+            src-tauri/target/release/bundle/**
+
+      - name: Generate release metadata
+        shell: bash
+        env:
+          TEST_OUTCOME_AGGREGATE: success
+          ARTIFACT_NAME_MACOS: stayactive-macos-${{ needs.quality-gate.outputs.tag_name }}-${{ needs.quality-gate.outputs.short_sha }}-${{ github.run_id }}
+          ARTIFACT_URI_MACOS: ${{ steps.tauri.outputs.releaseHtmlUrl }}
+        run: bash scripts/ci/generate-release-metadata.sh release-metadata.json
+
+      - name: Upload release metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-metadata-${{ needs.quality-gate.outputs.tag_name }}-${{ github.run_id }}
+          path: release-metadata.json
+
+      - name: Publish run summary
+        shell: bash
+        run: |
+          {
+            echo "## Tag release"
+            echo "- tag: \`${{ needs.quality-gate.outputs.tag_name }}\`"
+            echo "- release_url: ${{ steps.tauri.outputs.releaseHtmlUrl }}"
+            echo "- source_revision: \`$GITHUB_SHA\`"
+            echo "- pipeline_run_id: \`$GITHUB_RUN_ID\`"
+          } >> "$GITHUB_STEP_SUMMARY"

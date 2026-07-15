@@ -18,7 +18,7 @@ Built with Tauri v2 (`Rust` + `React` + `Vite`).
 - Timer presets: `10m`, `30m`, `1h`, `2h`, `3h`
 - Custom timer end-time picker
 - Countdown display and cancel flow from tray menu
-- Settings window (automation behavior + language + region)
+- Settings window (automation behavior + language)
 - Localization: English and Chinese
 - Accessibility permission guidance and in-app prompt handling
 
@@ -29,13 +29,34 @@ Built with Tauri v2 (`Rust` + `React` + `Vite`).
   - Job: `quality-gate` on `macos-latest`
 - Main workflow: `.github/workflows/release-main.yml`
   - Trigger: push to `main` and optional manual dispatch
-  - Order: `quality-gate` -> `build-installers-macos` -> `publish`
-  - Artifacts include traceable metadata (`source_revision`, `pipeline_run_id`)
+  - Order: `quality-gate` -> `build-installers-macos` -> metadata/artifacts
+  - Does not create public GitHub Releases
+- Tag workflow: `.github/workflows/release-tag.yml`
+  - Trigger: push of `v*` tags (e.g. `v0.1.0`) or manual dispatch with a tag
+  - Builds macOS package and publishes a GitHub Release with downloadable assets
+  - Auto-generates release notes from commits since the previous tag
 
 See also:
 
 - `docs/ci/github-actions-pipeline.md`
 - `specs/005-github-actions-pipeline/contracts/workflow-triggers.md`
+
+## Public trial download (GitHub Releases)
+
+1. Open [Releases](https://github.com/GavinWu1991/StayActive/releases).
+2. Download the latest macOS `.dmg` / app asset.
+3. Follow [First Launch](#first-launch-important) below.
+
+### Cut a versioned release
+
+```bash
+# 1) Ensure src-tauri/tauri.conf.json version matches (e.g. 0.1.0)
+# 2) Merge to main, then:
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+GitHub Actions runs `Tag Release Pipeline` and publishes the release page automatically.
 
 ## First Launch (Important)
 

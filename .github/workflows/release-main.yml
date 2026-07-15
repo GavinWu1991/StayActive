@@ -45,20 +45,15 @@ jobs:
         shell: bash
         run: npm ci
 
-      - name: Build installer bundle
+      # Build only — versioned public downloads are published by Tag Release Pipeline.
+      - name: Build macOS installer bundle
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          includeUpdaterJson: false
-          tagName: nightly-${{ github.run_id }}
-          releaseName: Nightly ${{ github.run_number }}
-          releaseBody: |
-            source_revision=${{ github.sha }}
-            pipeline_run_id=${{ github.run_id }}
-            workflow_run_url=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          releaseDraft: false
-          prerelease: true
+          uploadUpdaterJson: false
+          uploadUpdaterSignatures: false
+          uploadWorkflowArtifacts: false
 
       - name: Upload raw bundles
         if: always()
@@ -94,10 +89,11 @@ jobs:
       - name: Publish run summary
         shell: bash
         run: |
-          echo "## Release traceability" >> "$GITHUB_STEP_SUMMARY"
+          echo "## Main build traceability" >> "$GITHUB_STEP_SUMMARY"
           echo "- source_revision: $GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
           echo "- pipeline_run_id: $GITHUB_RUN_ID" >> "$GITHUB_STEP_SUMMARY"
           echo "- workflow_run_url: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> "$GITHUB_STEP_SUMMARY"
+          echo "- note: Public GitHub Releases are created by Tag Release Pipeline on \`v*\` tags." >> "$GITHUB_STEP_SUMMARY"
 
       - name: Optional webhook notification on failure
         if: ${{ failure() }}
